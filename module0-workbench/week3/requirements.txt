@@ -1,0 +1,6 @@
+# Week 3 — dependencies for agent_teaser.py (the Lab 3D finale).
+# The backend/ and frontend/ folders each have their own requirements.txt;
+# this one is only for running the agent teaser locally against your deployed API.
+openai>=1.0.0,<2.0.0
+requests>=2.28.0,<3.0.0
+python-dotenv>=1.0.0,<2.0.0
