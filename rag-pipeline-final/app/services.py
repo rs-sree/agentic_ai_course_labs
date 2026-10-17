@@ -21,6 +21,6 @@ def _get_stores():
     return _bm25_store, _faiss_store
 
 
-def ask(question: str) -> dict:
+def ask(question: str, role: str = "public") -> dict:
     bm25_store, faiss_store = _get_stores()
-    return answer_question(question, bm25_store, faiss_store)
+    return answer_question(question, bm25_store, faiss_store, role=role)

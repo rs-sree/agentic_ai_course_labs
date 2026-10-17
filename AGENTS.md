@@ -136,10 +136,15 @@ When the user gives you a new week's lab (a zip in `~/Downloads`, a folder, or a
 
 ## Quick reference — the final pipeline today
 
-`rag-pipeline-final/` currently reflects **Module 2, Week 5**. Core package (12 modules):
+`rag-pipeline-final/` currently reflects **Module 2, Week 6**. Core package (14 modules):
 `ingest, chunk, embed, vector_store, qdrant_store, bm25_store, hybrid, reranker, generate, answer,
-access, reindex`. Service: `app/` exposing `/health` and `/ask`. Runners: `build_chunks.py`,
-`build_index.py`, `build_secure_index.py`. Dependency spine:
-`app/services.py → rag.answer → {embed, hybrid→(vector_store, bm25_store), reranker, generate}`.
+access, reindex, judge, metrics`. Service: `app/` exposing `/health` and `/ask` (now takes a
+`role`, fails closed to `public`). Runners: `build_chunks.py`, `build_index.py`,
+`build_secure_index.py`. Dependency spine:
+`app/services.py → rag.answer → {embed, hybrid→(vector_store, bm25_store), access, reranker, generate}`.
+`judge` + `metrics` are the reusable evaluation library (in `rag/`, so they ship here) but are NOT
+on the serving path — Week 6's eval/observability scripts (`run_eval.py`, `regression_check.py`,
+`traced_answer.py`, `eval_set.py`) and the heavy Langfuse `docker-compose.yml` stay demos in
+`module2-rag/week6/`; this folder keeps a Qdrant-only compose and adds no `langfuse` dep.
 
 When you finish an integration, update this section's "currently reflects" line to the new week.

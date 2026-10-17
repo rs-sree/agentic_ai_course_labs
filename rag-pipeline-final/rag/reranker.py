@@ -27,7 +27,12 @@ def rerank(query, candidates, top_k=5):
 
     `candidates` is typically a hybrid or vector search result list.
     Returns the top_k, re-ordered by the cross-encoder's score, best first.
+    An empty candidate list (e.g. every retrieved chunk got filtered out by
+    a role's access tier before reranking) returns empty, not an error -
+    the cross-encoder has nothing to compare, so there's nothing to rerank.
     """
+    if not candidates:
+        return []
     pairs = [(query, chunk["text"]) for _score, chunk in candidates]
     cross_scores = _get_model().predict(pairs)
     reranked = sorted(zip(cross_scores, [chunk for _score, chunk in candidates]),

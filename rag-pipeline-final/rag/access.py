@@ -29,6 +29,23 @@ def visibility_filter(role):
     ])
 
 
+def filter_chunks_by_role(chunks, role):
+    """Same fail-closed rule as visibility_filter, applied to a plain list of
+    (score, chunk) tuples instead of a Qdrant query - for callers (like
+    /ask's FAISS+BM25 hybrid pipeline) that don't query Qdrant at all.
+
+    Filters AFTER retrieval, not at the index-query level Week 5's Qdrant
+    path uses - a real, deliberate trade-off (see Week 5's own README): it
+    keeps the existing hybrid+rerank pipeline intact, at the cost of
+    spending retrieval compute on chunks that get thrown away afterward.
+    """
+    allowed = ROLE_ACCESS.get(role, ROLE_ACCESS["public"])
+    return [
+        (score, chunk) for score, chunk in chunks
+        if chunk["metadata"].get("visibility", "editor") in allowed
+    ]
+
+
 def normalize_visibility(chunks):
     """Fail closed at ingestion too: a chunk with no visibility tag is
     treated as the MOST restrictive tier (editor-only), never assumed public.

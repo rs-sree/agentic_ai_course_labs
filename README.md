@@ -21,7 +21,8 @@ agentic_ai_course_labs/
     ├── week2/   embeddings + vector search (FAISS → Qdrant)
     ├── week3/   hybrid search (BM25 + vector) + cross-encoder reranking
     ├── week4/   grounded generation: citations + honest fallback
-    └── week5/   access control, data freshness, managed vector DB (Pinecone)
+    ├── week5/   access control, data freshness, managed vector DB (Pinecone)
+    └── week6/   retrieval evaluation + LLM-as-judge, regression gating, Langfuse tracing
 ```
 
 The RAG track is one continuous system — each week extends the same codebase and the same
@@ -118,16 +119,36 @@ A production-minded retrieval pipeline over a newsroom archive. The corpus (`dat
 - **Run:** `docker compose up -d qdrant` → `python build_secure_index.py` → `python access_control.py`.
   (`pinecone_demo.py` needs a free `PINECONE_API_KEY`.)
 
+### Week 6 — Retrieval evaluation, faithfulness judging & observability
+- `rag/metrics.py` — `hit_rate()` / `reciprocal_rank()` / `mean_reciprocal_rank()`: did retrieval
+  find the right chunk, and how high did it rank — measured against a golden set, not guessed.
+- `rag/judge.py` — `judge_faithfulness()`: a second, independent model call that reads an answer
+  against its sources and judges whether every claim actually holds up.
+- `rag/access.py` — extended with `filter_chunks_by_role()`, so `/ask` finally respects `role`
+  (public/reporter/editor), filtering candidates **before** reranking. Closes the gap Week 5's own
+  README flagged: the mechanism existed, but the real endpoint ignored it.
+- `eval_set.py` — a golden set of 8 real newsroom questions (incl. two deliberately hard cases: a
+  genuinely out-of-corpus question and a GraphRAG-shaped multi-hop one flat retrieval can't answer).
+- Demos: `run_eval.py` (score the golden set through the real `answer_question` path),
+  `regression_check.py` (fail loudly if quality drops below a saved baseline), `traced_answer.py`
+  (every retrieve/rerank/generate step as an inspectable Langfuse trace).
+- **Concept:** prove the system is good, don't just demo it on the three questions that worked.
+  Measure retrieval and faithfulness, gate regressions like a test suite, and make each stage
+  observable — plus wire the Week 5 access mechanism into the actual `/ask` endpoint.
+- **Run:** `python build_chunks.py` → `python build_index.py` → `python run_eval.py` →
+  `python regression_check.py --save-baseline`. Tracing (`traced_answer.py`) needs the local
+  Langfuse stack: `docker compose up -d` in `week6/`, or point `LANGFUSE_HOST` at Langfuse Cloud.
+
 ---
 
 ## Suggested study order
 
 1. Module 0 Week 1 → 2 → 3  (understand the model, then how to serve it)
-2. Module 2 Week 2 → 3 → 4 → 5  (build the RAG pipeline end to end)
+2. Module 2 Week 2 → 3 → 4 → 5 → 6  (build the RAG pipeline end to end, then prove it's good)
 
 The thread that runs through all of it: **retrieval quality and grounding discipline matter more
 than the model.** Week 3 (hybrid + rerank) and Week 4 (grounded + honest refusal) are the two
-labs worth re-running until they're second nature.
+labs worth re-running until they're second nature; Week 6 is how you *prove* they still work.
 
 ---
 

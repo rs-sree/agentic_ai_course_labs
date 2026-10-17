@@ -21,5 +21,5 @@ def health_check():
 
 @app.post("/ask", response_model=AskResponse)
 def ask_question(req: AskRequest):
-    result = ask(req.question)
+    result = ask(req.question, role=req.role)
     return AskResponse(**result)

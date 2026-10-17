@@ -38,12 +38,18 @@ The core `rag/` package, growing each week:
 | W3 | `+ bm25_store, hybrid, reranker` | keyword + hybrid search, reranking |
 | W4 | `+ generate, answer` | grounded, cited answers / honest refusal |
 | W5 | `+ access, reindex` (+ `qdrant_store` returns) | access control, incremental re-index |
+| W6 | `+ judge, metrics` (+ `access` gains `filter_chunks_by_role`) | retrieval + faithfulness evaluation; `/ask` now role-gated |
 
 Carried-forward API `app/`: **W2** (adds `POST /search`) → **W3 pauses** (demo-only week) →
-**W4** (extends the W2 service with `POST /ask`) → **W5** (same service).
+**W4** (extends the W2 service with `POST /ask`) → **W5** (same service) → **W6** (`/ask` gains a
+`role` field; `answer_question` filters by role before reranking — fails closed to `public`).
 
 Pipeline runners present every week: `build_chunks.py`, `build_index.py`
 (+ `build_secure_index.py` in W5).
+
+> **W6 note:** `judge.py` and `metrics.py` live in the `rag/` package (reusable library, so they
+> ship in `rag-pipeline-final/`), but on the serving path only the `access` extension runs — the
+> eval modules are exercised by Week 6's `run_eval.py` / `traced_answer.py`, which stay demos.
 
 ### The teaching demos (run once, understand, move on)
 
@@ -62,6 +68,9 @@ Pipeline runners present every week: `build_chunks.py`, `build_index.py`
 | W5 | `add_new_document.py` | incremental add without a full rebuild |
 | W5 | `update_existing_document.py` | update one doc's chunks in place |
 | W5 | `pinecone_demo.py` | the same pipeline on a managed vector DB |
+| W6 | `run_eval.py` (+ `eval_set.py`) | score retrieval + faithfulness on a golden set, not on vibes |
+| W6 | `regression_check.py` | fail the build if quality drops below a saved baseline |
+| W6 | `traced_answer.py` | every retrieve/rerank/generate step as an inspectable Langfuse trace |
 
 ---
 
